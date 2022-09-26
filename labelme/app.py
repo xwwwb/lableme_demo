@@ -33,6 +33,7 @@ from labelme.widgets import LabelListWidgetItem
 from labelme.widgets import ToolBar
 from labelme.widgets import UniqueLabelQListWidget
 from labelme.widgets import ZoomWidget
+from labelme.widgets import processBar
 
 # FIXME
 # - [medium] Set max zoom value to something big enough for FitWidth/Window
@@ -522,6 +523,27 @@ class MainWindow(QtWidgets.QMainWindow):
             checkable=True,
             enabled=False,
         )
+
+        processBar = action(
+            self.tr("进度条"),
+            self.handleProcessBar,
+            None,
+            "processbar",  # 图标？
+            self.tr("显示进度条"),
+            checkable=True,
+
+            enabled=True,
+        )
+        test = action(
+            self.tr("测试"),
+            self.handleProcessBarTest,
+            None,
+            None,  # 图标？
+            self.tr("显示进度条"),
+            checkable=True,
+            enabled=True,
+        )
+
         brightnessContrast = action(
             "&Brightness Contrast",
             self.brightnessContrast,
@@ -749,6 +771,8 @@ class MainWindow(QtWidgets.QMainWindow):
             None,
             zoom,
             fitWidth,
+            processBar,
+            test
         )
 
         self.statusBar().showMessage(str(self.tr("%s started.")) % __appname__)
@@ -1417,6 +1441,20 @@ class MainWindow(QtWidgets.QMainWindow):
             self.actions.fitWidth.setChecked(False)
         self.zoomMode = self.FIT_WINDOW if value else self.MANUAL_ZOOM
         self.adjustScale()
+
+    def handleProcessBar(self, value=True):
+        self.processBarWindow = processBar.ProcessBar(title="进度条")
+        self.processBarWindow.show()
+        self.setProcessBarValue = self.processBarWindow.setProcessValue
+        self.getProcessBarValue = self.processBarWindow.getProcessValue
+        self.setProcessBarLabel = self.processBarWindow.setProcessBarLabel
+
+    def handleProcessBarTest(self, value=True):
+        now_value = self.getProcessBarValue()
+        if now_value <100:
+            self.setProcessBarValue(now_value+10)
+        if now_value ==100:
+            self.setProcessBarLabel("已完成")
 
     def setFitWidth(self, value=True):
         if value:
